@@ -1,0 +1,35 @@
+{
+  "transcript_id": "ad6a155e-e935-46aa-a736-2ae23167d1af",
+  "actions": [
+    {
+      "task": "Follow up with the sports office about the outdoor ground booking",
+      "owner": "Aditya",
+      "deadline": "August 20th",
+      "source": "Rhea: Can you follow up with them by this Thursday?"
+    },
+    {
+      "task": "Send the sponsorship deck to two backup sponsors",
+      "owner": "Sana",
+      "deadline": "August 21st",
+      "source": "Rhea: Can you at least send the sponsorship deck to two more potential backup sponsors this week?"
+    },
+    {
+      "task": "Fix the mobile view of the schedule page",
+      "owner": "Farhan",
+      "deadline": "August 19th",
+      "source": "Rhea: Farhan, can you fix the mobile view of the schedule page?"
+    },
+    {
+      "task": "Get ID cards printed",
+      "owner": "Ishaan",
+      "deadline": "August 24th",
+      "source": "Rhea: Ishaan, can you at least get the ID cards printed by early next week so registration desk has them ready?"
+    },
+    {
+      "task": "Sync separately on workshop pricing",
+      "owner": "Farhan and Sana",
+      "deadline": null,
+      "source": "Rhea: Let's also make sure Farhan and Sana sync separately on workshop pricing since that's holding up two things now."
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+SAMPLE TRANSCRIPT 1
+Meeting: TechFest 2026 — Core Committee Sync
+Date: August 15, 2026
+Attendees: Rhea (Fest Coordinator), Aditya (Logistics), Sana (Sponsorship), Farhan (Tech/Web), Ishaan (Design)
+
+Rhea: Let's start with venue booking. Aditya, did the auditorium get confirmed for the main day?
+Aditya: Yes, the main auditorium is confirmed for October 4th. I signed the booking form yesterday. Still pending is the outdoor ground for the gaming zone — the sports office hasn't responded yet.
+Rhea: Can you follow up with them by this Thursday?
+Aditya: Sure, I'll chase the sports office by Thursday, August 20th.
+
+Rhea: Sponsorship update, Sana?
+Sana: TechNova Solutions confirmed as title sponsor, contract signed. They're giving 2 lakhs plus swag for participants. On the second sponsor, CodeCraft, they're still reviewing internally — no word yet on amount or timeline.
+Rhea: Okay, keep nudging them but no fixed deadline since it's out of our hands. Can you at least send the sponsorship deck to two more potential backup sponsors this week?
+Sana: Yes, I'll send the deck to two backup sponsors by Friday, August 21st.
+
+Rhea: Website and registration, Farhan?
+Farhan: Registration form is live, we've had about 300 signups so far. The payment gateway for the paid workshops is still not integrated — I was waiting on Sana to confirm final workshop pricing before wiring that up.
+Sana: Right, sorry, I still need to finalize pricing with the workshop leads. I don't have a date for that yet, it depends on their material costs.
+Rhea: Okay, Farhan, once pricing comes in can you turn around the payment integration in two days?
+Farhan: Yeah, two days once I get the numbers, so it's blocked on Sana for now.
+Rhea: Separately, Farhan, can you fix the mobile view of the schedule page? A few people complained it's unreadable on phones.
+Farhan: I'll fix the mobile schedule layout by Wednesday, August 19th.
+
+Rhea: Design and print materials, Ishaan?
+Ishaan: Posters and banners are designed and approved. ID cards template is done too. Still working on the stage backdrop design — that one's taking longer since we're waiting on the final list of sponsor logos to place on it.
+Rhea: No firm date on the backdrop then, since it depends on Sana's sponsor list. Ishaan, can you at least get the ID cards printed by early next week so registration desk has them ready?
+Ishaan: I'll get ID cards printed by Monday, August 24th.
+
+Aditya: One risk to flag — we still don't have a confirmed headcount for volunteer coordinators, and without the outdoor ground booking we can't finalize the gaming zone layout either.
+Rhea: Noted, both are blockers we need to resolve before next week's meeting. Let's also make sure Farhan and Sana sync separately on workshop pricing since that's holding up two things now — the payment gateway and possibly some sponsor commitments.
+
+Rhea: Alright, good progress. Recap of open risks: outdoor ground booking still pending, workshop pricing blocking two workstreams, and second sponsor CodeCraft still undecided. Let's regroup same time next week.
+
+
+
+
+
+SAMPLE TRANSCRIPT 2
+Meeting: Robotics Club — Nationals Prep Sync
+Date: August 16, 2026
+Attendees: Neha (Team Captain), Rohan (Hardware Lead), Simran (Software Lead), Vikram (Mentor/Faculty Advisor), Ayesha (Logistics)
+
+Neha: Let's start with the robot build. Rohan, where are we on the chassis?
+Rohan: The chassis is fully assembled and the drivetrain is working. The gripper arm still has a torque issue — it's not lifting objects heavier than 200 grams, and the competition requires at least 500 grams.
+Neha: That's a real problem. Can you get a fix in place by this Thursday so we have time to test?
+Rohan: Yeah, I'll rebuild the gripper linkage with the stronger servos by Thursday, August 20th.
+
+Neha: Simran, how's the autonomous navigation code coming along?
+Simran: The line-following logic works fine on a straight path, but it loses tracking on sharp turns. I think we need better sensor calibration, not just code changes. I haven't figured out exactly how much time that'll take yet — depends on how the new sensors behave once they arrive.
+Neha: Okay, no fixed date on that then, since it depends on the hardware. But can you at least push the current working version to GitHub so we have a fallback?
+Simran: Sure, I'll push the current stable version by tomorrow, August 17th.
+
+Neha: Vikram, any update on the competition registration and paperwork?
+Vikram: Registration is confirmed, we're competing in the Robotics Nationals on September 14th. I still need to submit the safety compliance form — I'm waiting on the final weight specs from Rohan before I can fill that out.
+Rohan: I can get you the weight specs once the gripper rebuild is done, so that's blocked on my task.
+Vikram: Understood, no separate deadline for the form then, it'll follow right after Rohan's fix.
+
+Neha: Ayesha, what's the status on travel and accommodation for the competition?
+Ayesha: I've gotten quotes from two travel agencies for the bus booking. One is significantly cheaper but has worse reviews for punctuality, which matters since we can't be late for our slot.
+Neha: Let's not decide today, but Ayesha, can you finalize the decision and book by early next week?
+Ayesha: I'll finalize and book transport by Monday, August 24th.
+Ayesha: Separately, I'm still waiting to hear back from two hotels near the venue about group rates — no timeline on that since it's outside our control.
+
+Vikram: One more thing — I noticed our spare parts inventory is low, especially servo motors and wheel treads. If something breaks during the competition, we won't have backups.
+Neha: That's a real risk. Rohan, can you order spare servos and treads by Friday so they arrive before we leave?
+Rohan: I'll order spare parts by Friday, August 21st.
+
+Neha: Alright, good progress. Quick recap of risks: the gripper strength is still unresolved, sensor calibration timing is unclear until new sensors arrive, and we're low on spare parts. Let's regroup in three days to check progress.

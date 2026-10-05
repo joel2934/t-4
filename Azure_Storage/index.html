@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SecureShare — Azure Blob Storage</title>
+<style>
+  :root {
+    --blue: #0078d4;
+    --blue-dark: #005fa3;
+    --text: #1b1f24;
+    --muted: #57606a;
+    --green: #0f7a53;
+    --red: #b3273f;
+    --glass-bg: rgba(255, 255, 255, 0.55);
+    --glass-border: rgba(255, 255, 255, 0.65);
+    --panel-bg: rgba(255, 255, 255, 0.5);
+    --panel-border: rgba(255, 255, 255, 0.7);
+  }
+  * { box-sizing: border-box; }
+  html, body { max-width: 100%; overflow-x: hidden; }
+  html { height: 100%; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    color: var(--text);
+    margin: 0;
+    min-height: 100vh;
+    background: #0f2f4f;
+    position: relative;
+  }
+
+  /* Animated colorful backdrop that the glass panels blur over */
+  .bg-decor {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0a2540 0%, #123a63 45%, #0e4a5c 100%);
+  }
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.55;
+    animation: drift 18s ease-in-out infinite alternate;
+  }
+  .blob.b1 {
+    width: 480px; height: 480px;
+    top: -120px; left: -100px;
+    background: #0078d4;
+  }
+  .blob.b2 {
+    width: 420px; height: 420px;
+    bottom: -140px; right: -80px;
+    background: #00b7c3;
+    animation-delay: -6s;
+  }
+  .blob.b3 {
+    width: 360px; height: 360px;
+    top: 40%; right: 15%;
+    background: #7c5cff;
+    animation-delay: -11s;
+    opacity: 0.35;
+  }
+  @keyframes drift {
+    from { transform: translate(0, 0) scale(1); }
+    to { transform: translate(40px, 30px) scale(1.08); }
+  }
+
+  .page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px;
+  }
+
+  .app-shell {
+    width: 100%;
+    max-width: 1080px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 22px;
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    box-shadow: 0 20px 60px rgba(6, 20, 40, 0.35), inset 0 1px 0 rgba(255,255,255,0.5);
+    overflow: hidden;
+  }
+
+  .shell-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 22px 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.5);
+    background: linear-gradient(120deg, rgba(0,120,212,0.18), rgba(0,183,195,0.12));
+  }
+  @media (min-width: 640px) {
+    .shell-header { padding: 26px 32px; }
+  }
+  .shell-header .logo {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.55);
+    border: 1px solid rgba(255,255,255,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+  .shell-header h1 { font-size: 19px; margin: 0; line-height: 1.25; }
+  .shell-header p { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+
+  .shell-body {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-areas: "upload" "files" "link";
+    gap: 16px;
+  }
+  @media (min-width: 640px) {
+    .shell-body { padding: 28px 32px; gap: 20px; }
+  }
+  @media (min-width: 940px) {
+    .shell-body {
+      grid-template-columns: 1fr 1.25fr;
+      grid-template-areas:
+        "upload files"
+        "link   files";
+      grid-template-rows: auto 1fr;
+      align-items: start;
+    }
+  }
+
+  .panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 4px 16px rgba(15, 40, 70, 0.08);
+    min-width: 0;
+  }
+  @media (min-width: 640px) {
+    .panel { padding: 22px; }
+  }
+  .panel h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin: 0 0 14px;
+  }
+
+  .panel-upload { grid-area: upload; }
+  .panel-files { grid-area: files; display: flex; flex-direction: column; }
+  .panel-link { grid-area: link; }
+
+  .dropzone {
+    border: 2px dashed rgba(0,120,212,0.35);
+    border-radius: 12px;
+    padding: 26px 14px;
+    text-align: center;
+    cursor: pointer;
+    background: rgba(255,255,255,0.35);
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .dropzone.dragover {
+    border-color: var(--blue);
+    background: rgba(0,120,212,0.12);
+  }
+  .dropzone .icon { font-size: 26px; margin-bottom: 8px; }
+  .dropzone p { margin: 0; color: var(--muted); font-size: 13px; }
+  .dropzone strong { color: var(--blue); }
+  #fileInput { display: none; }
+
+  .selected-file {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text);
+    display: none;
+  }
+
+  button {
+    background: var(--blue);
+    color: white;
+    border: none;
+    padding: 9px 16px;
+    border-radius: 9px;
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 500;
+    transition: background 0.15s, transform 0.05s;
+  }
+  button:hover { background: var(--blue-dark); }
+  button:active { transform: scale(0.98); }
+  button:disabled { background: #a9b4c0; cursor: not-allowed; }
+  button.secondary {
+    background: rgba(255,255,255,0.5);
+    color: var(--blue);
+    border: 1px solid rgba(0,120,212,0.25);
+  }
+  button.secondary:hover { background: rgba(255,255,255,0.8); }
+
+  .upload-actions { margin-top: 14px; display: flex; gap: 10px; align-items: center; }
+
+  .panel-files-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .panel-files-header h2 { margin: 0; }
+
+  .file-scroll {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 460px;
+    padding-right: 2px;
+  }
+
+  ul#fileList { list-style: none; margin: 0; padding: 0; }
+  #fileList li {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 12px 4px;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+  #fileList li:last-child { border-bottom: none; }
+  .file-top-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .file-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .file-icon {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: rgba(0,120,212,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  .file-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 8px;
+    width: 100%;
+  }
+  @media (min-width: 520px) {
+    .file-controls { width: auto; }
+  }
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .control-group button { flex-shrink: 0; }
+  .control-group select { flex: 1 1 auto; min-width: 0; }
+  select {
+    padding: 6px 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.12);
+    font-size: 12.5px;
+    background: rgba(255,255,255,0.8);
+    max-width: 100%;
+  }
+  .empty-state {
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+    padding: 24px 0;
+  }
+
+  .link-result { display: none; }
+  .link-result.visible { display: block; }
+  .link-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: rgba(255,255,255,0.6);
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-top: 8px;
+  }
+  .link-row input {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 0;
+    border: none;
+    background: transparent;
+    font-size: 12.5px;
+    color: var(--text);
+    outline: none;
+  }
+  .link-row button { flex-shrink: 0; }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 6px 12px;
+    margin-top: 10px;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+  .badge.active { background: rgba(15,122,83,0.15); color: var(--green); }
+  .badge.expired { background: rgba(179,39,63,0.15); color: var(--red); }
+  .badge.destruct { background: rgba(180,83,9,0.15); color: #b45309; }
+
+  .destruct-row {
+    margin-top: 2px;
+    font-size: 11.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .destruct-row .badge { cursor: default; }
+  .destruct-row button.mini {
+    padding: 2px 8px;
+    font-size: 11px;
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid rgba(0,0,0,0.12);
+  }
+  .destruct-row button.mini:hover { background: rgba(0,120,212,0.08); color: var(--blue); }
+
+  .toast-container {
+    position: fixed;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+    pointer-events: none;
+  }
+  @media (min-width: 520px) {
+    .toast-container { left: auto; align-items: flex-end; }
+  }
+  .toast {
+    background: rgba(20, 25, 32, 0.85);
+    backdrop-filter: blur(8px);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    max-width: 100%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    opacity: 0;
+    transform: translateY(6px);
+    animation: toast-in 0.2s forwards;
+  }
+  .toast.error { background: rgba(179,39,63,0.9); }
+  .toast.success { background: rgba(15,122,83,0.9); }
+  @keyframes toast-in {
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-decor">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+</div>
+
+<div class="page">
+  <div class="app-shell">
+
+    <div class="shell-header">
+      <div class="logo">☁️</div>
+      <div>
+        <h1>SecureShare</h1>
+        <p>Time-limited file sharing, backed by Azure Blob Storage</p>
+      </div>
+    </div>
+
+    <div class="shell-body">
+
+      <div class="panel panel-upload">
+        <h2>Upload</h2>
+        <div class="dropzone" id="dropzone">
+          <div class="icon">📤</div>
+          <p><strong>Click to browse</strong> or drag a file here</p>
+        </div>
+        <input type="file" id="fileInput" />
+        <div class="selected-file" id="selectedFile"></div>
+        <div class="upload-actions">
+          <button id="uploadBtn" onclick="uploadFile()">Upload to Azure</button>
+        </div>
+      </div>
+
+      <div class="panel panel-files">
+        <div class="panel-files-header">
+          <h2>Files in container</h2>
+          <button class="secondary" onclick="loadFiles()">Refresh</button>
+        </div>
+        <div class="file-scroll">
+          <ul id="fileList"></ul>
+        </div>
+      </div>
+
+      <div class="panel panel-link">
+        <h2>Secure link</h2>
+        <div id="linkEmpty" class="empty-state">Generate a link from the file list to see it here.</div>
+        <div id="linkResult" class="link-result">
+          <div style="font-size:13.5px;"><strong id="linkFileName"></strong></div>
+          <div class="link-row">
+            <input type="text" id="linkUrl" readonly />
+            <button class="secondary" onclick="copyLink()">Copy</button>
+          </div>
+          <div class="meta-row">
+            <span id="linkStatusBadgeWrap"><span class="badge active" id="linkStatusBadge">Active</span></span>
+            <span id="linkCountdown"></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+let selectedFile = null;
+let countdownTimer = null;
+const destructTimers = {}; // blob name -> interval id
+
+const dropzone = document.getElementById("dropzone");
+const fileInput = document.getElementById("fileInput");
+const selectedFileEl = document.getElementById("selectedFile");
+
+dropzone.addEventListener("click", () => fileInput.click());
+dropzone.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  dropzone.classList.add("dragover");
+});
+dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+dropzone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  dropzone.classList.remove("dragover");
+  if (e.dataTransfer.files.length) {
+    setSelectedFile(e.dataTransfer.files[0]);
+  }
+});
+fileInput.addEventListener("change", () => {
+  if (fileInput.files.length) setSelectedFile(fileInput.files[0]);
+});
+
+function setSelectedFile(file) {
+  selectedFile = file;
+  selectedFileEl.style.display = "block";
+  selectedFileEl.textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+}
+
+function showToast(message, type = "") {
+  const container = document.getElementById("toastContainer");
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3500);
+}
+
+async function uploadFile() {
+  if (!selectedFile) {
+    showToast("Choose a file first.", "error");
+    return;
+  }
+  const btn = document.getElementById("uploadBtn");
+  btn.disabled = true;
+  btn.textContent = "Uploading...";
+
+  const formData = new FormData();
+  formData.append("file", selectedFile);
+
+  try {
+    const res = await fetch("/upload", { method: "POST", body: formData });
+    const data = await res.json();
+    showToast(data.message || "Upload complete.", "success");
+    selectedFile = null;
+    selectedFileEl.style.display = "none";
+    fileInput.value = "";
+    loadFiles();
+  } catch (err) {
+    showToast("Upload failed.", "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Upload to Azure";
+  }
+}
+
+function iconFor(name) {
+  const ext = name.split(".").pop().toLowerCase();
+  const map = {
+    pdf: "📄", doc: "📄", docx: "📄",
+    png: "🖼️", jpg: "🖼️", jpeg: "🖼️", gif: "🖼️",
+    xls: "📊", xlsx: "📊", csv: "📊",
+    zip: "🗜️", mp4: "🎞️", mp3: "🎵",
+  };
+  return map[ext] || "📁";
+}
+
+async function loadFiles() {
+  // Clear any running per-file countdown intervals before rebuilding the list
+  Object.values(destructTimers).forEach((id) => clearInterval(id));
+  for (const key in destructTimers) delete destructTimers[key];
+
+  const res = await fetch("/files");
+  const data = await res.json();
+  const list = document.getElementById("fileList");
+  list.innerHTML = "";
+
+  if (!data.files.length) {
+    list.innerHTML = `<div class="empty-state">No files uploaded yet.</div>`;
+    return;
+  }
+
+  data.files.forEach((file) => {
+    const name = file.name;
+    const li = document.createElement("li");
+
+    const topRow = document.createElement("div");
+    topRow.className = "file-top-row";
+
+    const nameWrap = document.createElement("div");
+    nameWrap.className = "file-name";
+    nameWrap.title = name;
+    nameWrap.innerHTML = `<span class="file-icon">${iconFor(name)}</span><span>${name}</span>`;
+
+    const controls = document.createElement("div");
+    controls.className = "file-controls";
+
+    const linkGroup = document.createElement("div");
+    linkGroup.className = "control-group";
+
+    const select = document.createElement("select");
+    select.innerHTML = `
+      <option value="1">1 min</option>
+      <option value="2" selected>2 min</option>
+      <option value="5">5 min</option>
+      <option value="15">15 min</option>
+      <option value="60">1 hour</option>
+    `;
+
+    const linkBtn = document.createElement("button");
+    linkBtn.textContent = "Get link";
+    linkBtn.onclick = () => generateLink(name, select.value);
+
+    linkGroup.appendChild(select);
+    linkGroup.appendChild(linkBtn);
+
+    const destructGroup = document.createElement("div");
+    destructGroup.className = "control-group";
+
+    const destructSelect = document.createElement("select");
+    destructSelect.innerHTML = `
+      <option value="1">1 min</option>
+      <option value="2" selected>2 min</option>
+      <option value="5">5 min</option>
+      <option value="15">15 min</option>
+    `;
+
+    const destructBtn = document.createElement("button");
+    destructBtn.className = "secondary";
+    destructBtn.textContent = "💥 Self-destruct";
+    destructBtn.onclick = () => scheduleSelfDestruct(name, destructSelect.value);
+
+    destructGroup.appendChild(destructSelect);
+    destructGroup.appendChild(destructBtn);
+
+    controls.appendChild(linkGroup);
+    controls.appendChild(destructGroup);
+
+    topRow.appendChild(nameWrap);
+    topRow.appendChild(controls);
+
+    li.appendChild(topRow);
+
+    // If this file already has a self-destruct scheduled, show a live countdown row
+    if (file.self_destructs_at_utc) {
+      const destructAt = new Date(
+        file.self_destructs_at_utc.replace(" UTC", "Z").replace(" ", "T")
+      );
+      const row = document.createElement("div");
+      row.className = "destruct-row";
+      row.id = `destruct-row-${cssSafe(name)}`;
+
+      const badge = document.createElement("span");
+      badge.className = "badge destruct";
+      row.appendChild(badge);
+
+      const cancelBtn = document.createElement("button");
+      cancelBtn.className = "mini";
+      cancelBtn.textContent = "Cancel";
+      cancelBtn.onclick = () => cancelSelfDestruct(name);
+      row.appendChild(cancelBtn);
+
+      li.appendChild(row);
+
+      const tick = () => {
+        const remainingMs = destructAt - new Date();
+        if (remainingMs <= 0) {
+          badge.textContent = "Deleted";
+          clearInterval(destructTimers[name]);
+          delete destructTimers[name];
+          setTimeout(loadFiles, 800); // refresh so the deleted file drops off the list
+          return;
+        }
+        const totalSec = Math.floor(remainingMs / 1000);
+        const m = Math.floor(totalSec / 60);
+        const s = totalSec % 60;
+        badge.textContent = `Self-destructs in ${m}m ${s.toString().padStart(2, "0")}s`;
+      };
+      tick();
+      destructTimers[name] = setInterval(tick, 1000);
+    }
+
+    list.appendChild(li);
+  });
+}
+
+function cssSafe(name) {
+  return name.replace(/[^a-zA-Z0-9]/g, "-");
+}
+
+async function scheduleSelfDestruct(name, minutes) {
+  try {
+    const res = await fetch(
+      `/self-destruct/${encodeURIComponent(name)}?minutes=${minutes}`,
+      { method: "POST" }
+    );
+    if (!res.ok) {
+      showToast("Could not schedule self-destruct.", "error");
+      return;
+    }
+    showToast(`'${name}' will self-destruct in ${minutes} min.`, "success");
+    loadFiles();
+  } catch (err) {
+    showToast("Could not schedule self-destruct.", "error");
+  }
+}
+
+async function cancelSelfDestruct(name) {
+  try {
+    const res = await fetch(
+      `/cancel-self-destruct/${encodeURIComponent(name)}`,
+      { method: "POST" }
+    );
+    if (!res.ok) {
+      showToast("Could not cancel self-destruct.", "error");
+      return;
+    }
+    showToast(`Self-destruct canceled for '${name}'.`, "success");
+    loadFiles();
+  } catch (err) {
+    showToast("Could not cancel self-destruct.", "error");
+  }
+}
+
+async function generateLink(name, minutes) {
+  try {
+    const res = await fetch(`/generate-link/${encodeURIComponent(name)}?minutes_valid=${minutes}`);
+    if (!res.ok) {
+      showToast("Could not generate link.", "error");
+      return;
+    }
+    const data = await res.json();
+    displayLink(name, data);
+    showToast("Secure link generated.", "success");
+  } catch (err) {
+    showToast("Could not generate link.", "error");
+  }
+}
+
+function displayLink(name, data) {
+  document.getElementById("linkEmpty").style.display = "none";
+  const resultEl = document.getElementById("linkResult");
+  resultEl.classList.add("visible");
+
+  document.getElementById("linkFileName").textContent = name;
+  document.getElementById("linkUrl").value = data.url;
+
+  const expiryDate = new Date(data.expires_at_utc.replace(" UTC", "Z").replace(" ", "T"));
+
+  if (countdownTimer) clearInterval(countdownTimer);
+  const badge = document.getElementById("linkStatusBadge");
+  const countdownEl = document.getElementById("linkCountdown");
+
+  function tick() {
+    const remainingMs = expiryDate - new Date();
+    if (remainingMs <= 0) {
+      badge.textContent = "Expired";
+      badge.className = "badge expired";
+      countdownEl.textContent = `Expired at ${data.expires_at_utc}`;
+      clearInterval(countdownTimer);
+      return;
+    }
+    const totalSec = Math.floor(remainingMs / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    badge.textContent = "Active";
+    badge.className = "badge active";
+    countdownEl.textContent = `Expires in ${m}m ${s.toString().padStart(2, "0")}s`;
+  }
+
+  tick();
+  countdownTimer = setInterval(tick, 1000);
+}
+
+function copyLink() {
+  const input = document.getElementById("linkUrl");
+  input.select();
+  navigator.clipboard.writeText(input.value).then(() => showToast("Link copied.", "success"));
+}
+
+loadFiles();
+</script>
+
+</body>
+</html>

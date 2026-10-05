@@ -1,0 +1,9 @@
+interview_prep.db
+chroma_store/
+.model_cache/
+app/__pycache__/
+.env
+app/.env
+*.env
+.vscode/
+

@@ -1,0 +1,42 @@
+{
+  "6a9dc17a-4fbc-4325-9d1c-2ddfd1e200ea": {
+    "id": "6a9dc17a-4fbc-4325-9d1c-2ddfd1e200ea",
+    "transcript_id": "ad6a155e-e935-46aa-a736-2ae23167d1af",
+    "task": "Follow up with the sports office about the outdoor ground booking",
+    "owner": "Aditya",
+    "deadline": "August 20th",
+    "status": "open"
+  },
+  "d3d87613-264e-485d-a8af-15809d6e362a": {
+    "id": "d3d87613-264e-485d-a8af-15809d6e362a",
+    "transcript_id": "ad6a155e-e935-46aa-a736-2ae23167d1af",
+    "task": "Send the sponsorship deck to two backup sponsors",
+    "owner": "Sana",
+    "deadline": "August 21st",
+    "status": "open"
+  },
+  "44d7daf6-a7e9-4214-867f-c013d92dc498": {
+    "id": "44d7daf6-a7e9-4214-867f-c013d92dc498",
+    "transcript_id": "ad6a155e-e935-46aa-a736-2ae23167d1af",
+    "task": "Fix the mobile view of the schedule page",
+    "owner": "Farhan",
+    "deadline": "August 19th",
+    "status": "open"
+  },
+  "966d1aa4-5e00-4864-8989-c5d3492cb08d": {
+    "id": "966d1aa4-5e00-4864-8989-c5d3492cb08d",
+    "transcript_id": "ad6a155e-e935-46aa-a736-2ae23167d1af",
+    "task": "Get ID cards printed",
+    "owner": "Ishaan",
+    "deadline": "August 24th",
+    "status": "done"
+  },
+  "616b4ad2-47c7-4bcf-aa7a-0f49b3ca619c": {
+    "id": "616b4ad2-47c7-4bcf-aa7a-0f49b3ca619c",
+    "transcript_id": "ad6a155e-e935-46aa-a736-2ae23167d1af",
+    "task": "Sync separately on workshop pricing",
+    "owner": "Farhan and Sana",
+    "deadline": null,
+    "status": "open"
+  }
+}

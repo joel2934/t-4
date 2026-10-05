@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>NextFrame</title>
+
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+
+        body {
+            background: #0f0f0f;
+            color: white;
+            min-height: 100vh;
+        }
+
+
+        /* Header */
+
+        header {
+            text-align: center;
+            padding: 50px 20px 30px;
+        }
+
+
+        header h1 {
+            font-size: 52px;
+            letter-spacing: 2px;
+        }
+
+
+        header p {
+            color: #999;
+            margin-top: 10px;
+            font-size: 18px;
+        }
+
+
+        /* Search */
+
+        .search-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 25px auto;
+        }
+
+
+        .search-container input {
+            width: 450px;
+            padding: 15px 18px;
+            background: #222;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+
+
+        .search-container input:focus {
+            outline: 2px solid #e50914;
+        }
+
+
+        .search-container button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            background: #e50914;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+
+        .search-container button:hover {
+            background: #b20710;
+        }
+
+
+        /* Message */
+
+        #message {
+            text-align: center;
+            color: #aaa;
+            margin: 20px;
+            min-height: 20px;
+        }
+
+
+        /* Search Results */
+
+        .search-results {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+
+        .search-results h2 {
+            margin-bottom: 20px;
+        }
+
+
+        .search-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+
+        /* Movie Card */
+
+        .movie-card {
+            background: #1c1c1c;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+
+        .movie-card:hover {
+            transform: translateY(-6px);
+        }
+
+
+        .movie-card.selected {
+            outline: 3px solid #e50914;
+        }
+
+
+        .movie-card img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+
+
+        .movie-info {
+            padding: 15px;
+        }
+
+
+        .movie-info h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+
+        .rating {
+            color: #f5c518;
+            font-size: 14px;
+        }
+
+
+        .release {
+            color: #888;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+
+        /* Selected Movie */
+
+        .selected-section {
+            max-width: 900px;
+            margin: 40px auto;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+
+        #selectedMovie {
+            color: #aaa;
+            margin: 15px;
+            font-size: 18px;
+        }
+
+
+        #recommendButton {
+            padding: 15px 30px;
+            background: #e50914;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            display: none;
+        }
+
+
+        #recommendButton:hover {
+            background: #b20710;
+        }
+
+
+        /* Recommendations */
+
+        .recommendations {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 0 20px 60px;
+        }
+
+
+        .recommendations h2 {
+            margin-bottom: 25px;
+        }
+
+
+        .recommendation-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+        }
+
+
+        /* Recommendation Card */
+
+        .recommendation-card {
+            background: #1c1c1c;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: 0.25s;
+        }
+
+
+        .recommendation-card:hover {
+            transform: translateY(-6px);
+        }
+
+
+        .recommendation-card img {
+            width: 100%;
+            height: 320px;
+            object-fit: cover;
+        }
+
+
+        .recommendation-info {
+            padding: 15px;
+        }
+
+
+        .recommendation-info h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+
+        /* Movie Overview */
+
+        .overview {
+            color: #999;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-top: 10px;
+
+            height: 60px;
+            overflow: hidden;
+        }
+
+
+        /* Loading / Empty Messages */
+
+        .loading {
+            color: #aaa;
+            text-align: center;
+            grid-column: 1 / -1;
+            padding: 30px;
+        }
+
+
+        .no-poster {
+            width: 100%;
+            height: 300px;
+            background: #292929;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #777;
+        }
+
+
+        /* Responsive */
+
+        @media (max-width: 1000px) {
+
+            .search-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .recommendation-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+        }
+
+
+        @media (max-width: 650px) {
+
+            .search-container {
+                padding: 0 20px;
+            }
+
+            .search-container input {
+                width: 250px;
+            }
+
+            .search-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .recommendation-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+        }
+
+
+        @media (max-width: 450px) {
+
+            header h1 {
+                font-size: 40px;
+            }
+
+            .search-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .search-container input {
+                width: 100%;
+            }
+
+            .search-container button {
+                width: 100%;
+            }
+
+            .search-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .recommendation-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- Header -->
+
+    <header>
+
+        <h1>NextFrame</h1>
+
+        <p>
+            Find your next movie.
+        </p>
+
+    </header>
+
+
+    <!-- Search -->
+
+    <div class="search-container">
+
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Search for a movie..."
+        >
+
+        <button onclick="searchMovies()">
+            Search
+        </button>
+
+    </div>
+
+
+    <!-- Message -->
+
+    <div id="message"></div>
+
+
+    <!-- Search Results -->
+
+    <section class="search-results">
+
+        <h2>
+            Select a Movie
+        </h2>
+
+        <div
+            id="searchGrid"
+            class="search-grid">
+        </div>
+
+    </section>
+
+
+    <!-- Selected Movie -->
+
+    <section class="selected-section">
+
+        <div id="selectedMovie">
+            No movie selected
+        </div>
+
+
+        <button
+            id="recommendButton"
+            onclick="getRecommendations()">
+
+            Recommend Similar Movies
+
+        </button>
+
+    </section>
+
+
+    <!-- Recommendations -->
+
+    <section
+        class="recommendations"
+        id="recommendationSection"
+        style="display: none;"
+    >
+
+        <h2>
+            Recommended For You
+        </h2>
+
+
+        <div
+            id="recommendationGrid"
+            class="recommendation-grid">
+        </div>
+
+    </section>
+
+
+    <script>
+
+
+        // Selected movie
+
+        let selectedMovie = null;
+
+
+
+        // ==========================================
+        // Search Movies
+        // ==========================================
+
+        async function searchMovies() {
+
+
+            const query =
+                document
+                .getElementById("searchInput")
+                .value
+                .trim();
+
+
+            const searchGrid =
+                document
+                .getElementById("searchGrid");
+
+
+            const message =
+                document
+                .getElementById("message");
+
+
+            const recommendationSection =
+                document
+                .getElementById(
+                    "recommendationSection"
+                );
+
+
+            if (!query) {
+
+                message.innerText =
+                    "Please enter a movie name.";
+
+                return;
+
+            }
+
+
+            message.innerText =
+                "Searching movies...";
+
+
+            searchGrid.innerHTML =
+                "<p class='loading'>Searching movies...</p>";
+
+
+            // Hide old recommendations
+
+            recommendationSection.style.display =
+                "none";
+
+
+            try {
+
+
+                const response =
+                    await fetch(
+                        `/search?query=${encodeURIComponent(query)}`
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                console.log(
+                    "Search response:",
+                    data
+                );
+
+
+                if (data.error) {
+
+                    message.innerText =
+                        data.error;
+
+                    searchGrid.innerHTML =
+                        "";
+
+                    return;
+
+                }
+
+
+                searchGrid.innerHTML =
+                    "";
+
+
+                if (
+                    !data.results ||
+                    data.results.length === 0
+                ) {
+
+                    message.innerText =
+                        "No movies found.";
+
+                    return;
+
+                }
+
+
+                message.innerText =
+                    "Select a movie to get recommendations.";
+
+
+                data.results.forEach(
+                    movie => {
+
+
+                        const card =
+                            document.createElement(
+                                "div"
+                            );
+
+
+                        card.className =
+                            "movie-card";
+
+
+                        const poster =
+                            movie.poster
+                            ? movie.poster
+                            : null;
+
+
+                        if (poster) {
+
+
+                            card.innerHTML = `
+
+                                <img
+                                    src="${poster}"
+                                    alt="${movie.title}"
+                                >
+
+                                <div class="movie-info">
+
+                                    <h3>
+                                        ${movie.title}
+                                    </h3>
+
+                                    <div class="rating">
+                                        ⭐ ${
+                                            movie.rating
+                                            ? movie.rating.toFixed(1)
+                                            : "N/A"
+                                        }
+                                    </div>
+
+                                    <div class="release">
+                                        ${
+                                            movie.release_date
+                                            || "Unknown"
+                                        }
+                                    </div>
+
+                                </div>
+
+                            `;
+
+
+                        } else {
+
+
+                            card.innerHTML = `
+
+                                <div class="no-poster">
+                                    No Poster
+                                </div>
+
+                                <div class="movie-info">
+
+                                    <h3>
+                                        ${movie.title}
+                                    </h3>
+
+                                    <div class="rating">
+                                        ⭐ ${
+                                            movie.rating
+                                            ? movie.rating.toFixed(1)
+                                            : "N/A"
+                                        }
+                                    </div>
+
+                                    <div class="release">
+                                        ${
+                                            movie.release_date
+                                            || "Unknown"
+                                        }
+                                    </div>
+
+                                </div>
+
+                            `;
+
+                        }
+
+
+                        // Select movie
+
+                        card.onclick =
+                            function() {
+
+                                selectMovie(
+                                    movie,
+                                    card
+                                );
+
+                            };
+
+
+                        searchGrid
+                            .appendChild(card);
+
+
+                    }
+                );
+
+
+            } catch (error) {
+
+
+                console.error(
+                    "Search error:",
+                    error
+                );
+
+
+                message.innerText =
+                    "Something went wrong while searching.";
+
+
+                searchGrid.innerHTML =
+                    "";
+
+            }
+
+        }
+
+
+
+        // ==========================================
+        // Select Movie
+        // ==========================================
+
+        function selectMovie(
+            movie,
+            card
+        ) {
+
+
+            // Remove previous selection
+
+            document
+                .querySelectorAll(".movie-card")
+                .forEach(
+                    item => {
+
+                        item.classList.remove(
+                            "selected"
+                        );
+
+                    }
+                );
+
+
+            // Highlight selected movie
+
+            card.classList.add(
+                "selected"
+            );
+
+
+            // Store movie title
+
+            selectedMovie =
+                movie.title;
+
+
+            // Display selected movie
+
+            document
+                .getElementById(
+                    "selectedMovie"
+                )
+                .innerText =
+                `Selected: ${movie.title}`;
+
+
+            // Show recommendation button
+
+            document
+                .getElementById(
+                    "recommendButton"
+                )
+                .style.display =
+                "inline-block";
+
+        }
+
+
+
+        // ==========================================
+        // Get Recommendations
+        // ==========================================
+
+        async function getRecommendations() {
+
+
+            if (!selectedMovie) {
+
+                return;
+
+            }
+
+
+            const message =
+                document
+                .getElementById("message");
+
+
+            const recommendationGrid =
+                document
+                .getElementById(
+                    "recommendationGrid"
+                );
+
+
+            const recommendationSection =
+                document
+                .getElementById(
+                    "recommendationSection"
+                );
+
+
+            // Show recommendation section
+
+            recommendationSection.style.display =
+                "block";
+
+
+            // Show loading message
+
+            message.innerText =
+                "Finding similar movies...";
+
+
+            recommendationGrid.innerHTML =
+                "<p class='loading'>Finding similar movies...</p>";
+
+
+            try {
+
+
+                const response =
+                    await fetch(
+                        `/recommend/${encodeURIComponent(selectedMovie)}`
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                console.log(
+                    "Recommendation response:",
+                    data
+                );
+
+
+                // Check for backend error
+
+                if (data.error) {
+
+
+                    message.innerText =
+                        data.error;
+
+
+                    recommendationGrid.innerHTML = `
+
+                        <p class="loading">
+                            ${data.error}
+                        </p>
+
+                    `;
+
+
+                    return;
+
+                }
+
+
+                // Clear loading message
+
+                recommendationGrid.innerHTML =
+                    "";
+
+
+                // Check recommendations
+
+                if (
+                    !data.recommendations ||
+                    data.recommendations.length === 0
+                ) {
+
+
+                    message.innerText =
+                        "No recommendations found.";
+
+
+                    recommendationGrid.innerHTML = `
+
+                        <p class="loading">
+                            No recommendations found.
+                        </p>
+
+                    `;
+
+
+                    return;
+
+                }
+
+
+                // Update message
+
+                message.innerText =
+                    `Movies similar to ${data.movie}`;
+
+
+                // Display recommendations
+
+                data.recommendations.forEach(
+                    movie => {
+
+
+                        const card =
+                            document.createElement(
+                                "div"
+                            );
+
+
+                        card.className =
+                            "recommendation-card";
+
+
+                        const poster =
+                            movie.poster
+                            ? movie.poster
+                            : null;
+
+
+                        if (poster) {
+
+
+                            card.innerHTML = `
+
+                                <img
+                                    src="${poster}"
+                                    alt="${movie.title}"
+                                >
+
+                                <div class="recommendation-info">
+
+                                    <h3>
+                                        ${movie.title}
+                                    </h3>
+
+                                    <div class="rating">
+                                        ⭐ ${
+                                            movie.rating
+                                            ? movie.rating.toFixed(1)
+                                            : "N/A"
+                                        }
+                                    </div>
+
+                                    <div class="release">
+                                        ${
+                                            movie.release_date
+                                            || "Unknown"
+                                        }
+                                    </div>
+
+                                    <div class="overview">
+                                        ${
+                                            movie.overview
+                                            || "No description available."
+                                        }
+                                    </div>
+
+                                </div>
+
+                            `;
+
+
+                        } else {
+
+
+                            card.innerHTML = `
+
+                                <div class="no-poster">
+                                    No Poster
+                                </div>
+
+                                <div class="recommendation-info">
+
+                                    <h3>
+                                        ${movie.title}
+                                    </h3>
+
+                                    <div class="rating">
+                                        ⭐ ${
+                                            movie.rating
+                                            ? movie.rating.toFixed(1)
+                                            : "N/A"
+                                        }
+                                    </div>
+
+                                    <div class="release">
+                                        ${
+                                            movie.release_date
+                                            || "Unknown"
+                                        }
+                                    </div>
+
+                                    <div class="overview">
+                                        ${
+                                            movie.overview
+                                            || "No description available."
+                                        }
+                                    </div>
+
+                                </div>
+
+                            `;
+
+                        }
+
+
+                        recommendationGrid
+                            .appendChild(card);
+
+
+                    }
+                );
+
+
+                // Scroll to recommendations
+
+                recommendationSection
+                    .scrollIntoView({
+                        behavior: "smooth"
+                    });
+
+
+            } catch (error) {
+
+
+                console.error(
+                    "Recommendation error:",
+                    error
+                );
+
+
+                message.innerText =
+                    "Something went wrong while getting recommendations.";
+
+
+                recommendationGrid.innerHTML = `
+
+                    <p class="loading">
+                        Unable to load recommendations.
+                    </p>
+
+                `;
+
+            }
+
+        }
+
+
+
+        // ==========================================
+        // Search using Enter key
+        // ==========================================
+
+        document
+            .getElementById("searchInput")
+            .addEventListener(
+                "keypress",
+                function(event) {
+
+
+                    if (event.key === "Enter") {
+
+                        searchMovies();
+
+                    }
+
+                }
+            );
+
+
+    </script>
+
+
+</body>
+
+</html>
